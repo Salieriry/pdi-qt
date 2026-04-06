@@ -31,6 +31,9 @@ private:
     Ui::MainWindow *ui;
     QImage imagemCarregada;
     QImage imagemProcessada;
+    QImage imagemMascara;
+
     void desenharHistograma(const QImage &imagem);
+    void atualizarVisualizacaoHistograma();
 };
 #endif // MAINWINDOW_H
