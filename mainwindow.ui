@@ -199,7 +199,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>PushButton</string>
+     <string>Carregar Máscara</string>
     </property>
    </widget>
    <zorder>containerHistograma</zorder>

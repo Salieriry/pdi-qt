@@ -27,6 +27,8 @@ private slots:
 
     void on_btnQuestao4_clicked();
 
+    void on_btnCarregarMascara_clicked();
+
 private:
     Ui::MainWindow *ui;
     QImage imagemCarregada;

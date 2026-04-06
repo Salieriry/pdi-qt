@@ -326,3 +326,13 @@ void MainWindow::on_btnQuestao4_clicked()
     desenharHistograma(imagemProcessada);
 }
 
+
+void MainWindow::on_btnCarregarMascara_clicked()
+{
+    QString caminho = QFileDialog::getOpenFileName(this, "Selecione a Máscara", "", "Imagens (*.png *.jpg *.bmp)");
+    if (!caminho.isEmpty()) {
+        imagemMascara = QImage(caminho);
+        QMessageBox::information(this, "Sucesso", "Máscara carregada!");
+    }
+}
+
