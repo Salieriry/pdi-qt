@@ -162,6 +162,9 @@
       <height>23</height>
      </rect>
     </property>
+    <property name="maximum">
+     <number>255</number>
+    </property>
    </widget>
    <widget class="QRadioButton" name="radioHistOriginal">
     <property name="geometry">

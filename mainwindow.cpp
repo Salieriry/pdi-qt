@@ -132,128 +132,195 @@ void MainWindow::on_btnCarregar_clicked()
 
 void MainWindow::on_btnAplicar_clicked()
 {
-    if (imagemCarregada.isNull()) {
-        QMessageBox::warning(this, "Aviso", "Por favor, carregue uma imagem primeiro!");
-        return;
-    }
+    if (imagemCarregada.isNull()) return;
 
     imagemProcessada = imagemCarregada;
-
     int efeitoSelecionado = ui->comboEfeitos->currentIndex();
 
-    for (int y = 0; y < imagemProcessada.height(); y++) {
-        for (int x = 0; x < imagemProcessada.width(); x++) {
+    int param = ui->spinParametro->value();
 
-            QColor corAtual = imagemProcessada.pixelColor(x, y);
-            int r = corAtual.red();
-            int g = corAtual.green();
-            int b = corAtual.blue();
 
-            switch (efeitoSelecionado) {
-
-            case 0: { // aumentar brilho
-                int C = 60;
-                r = qBound(0, r + C, 255);
-                g = qBound(0, g + C, 255);
-                b = qBound(0, b + C, 255);
-                break;
-            }
-            case 1: { // requantização
-                r = std::round((r * 9.0) / 255.0) * (255/9);
-                g = std::round((g * 9.0) / 255.0) * (255/9);
-                b = std::round((b * 9.0) / 255.0) * (255/9);
-                break;
-            }
-            case 2: { // tons de cinza R
-                g = r;
-                b = r;
-                break;
-            }
-            case 3: { // tons de cinza G
-                r = g;
-                b = g;
-                break;
-            }
-            case 4: { // tons de cinza B
-                r = b;
-                g = b;
-                break;
-            }
-            case 5: { //binarização
-                int cinza = qGray(r, g, b);
-
-                if (cinza >= 127) {
-                    r = 255; g = 255; b = 255;
-                } else {
-                    r = 0; g = 0; b = 0;
-                }
-                break;
-            }
-            case 6: { // filtro da mediana
-
-                if (x > 0 && x < imagemCarregada.width() - 1 && y > 0 && y < imagemCarregada.height() - 1) {
-
-                    std::vector<int> vizinhosR, vizinhosG, vizinhosB;
-
-                    for (int dy = -1; dy <= 1; dy++) {
-                        for (int dx = -1; dx <= 1; dx++) {
-                            QColor corVizinho = imagemCarregada.pixelColor(x + dx, y + dy);
-                            vizinhosR.push_back(corVizinho.red());
-                            vizinhosG.push_back(corVizinho.green());
-                            vizinhosB.push_back(corVizinho.blue());
-                        }
-                    }
-
-                    std::sort(vizinhosR.begin(), vizinhosR.end());
-                    std::sort(vizinhosG.begin(), vizinhosG.end());
-                    std::sort(vizinhosB.begin(), vizinhosB.end());
-
-                    r = vizinhosR[4];
-                    g = vizinhosG[4];
-                    b = vizinhosB[4];
-
-                } else {
-                    r = corAtual.red();
-                    g = corAtual.green();
-                    b = corAtual.blue();
-                }
-                break;
-            }
-            case 7: { // filtro da média
-
-                if (x > 0 && x < imagemCarregada.width() - 1 && y > 0 && y < imagemCarregada.height() - 1) {
-
-                    int somaR = 0, somaG = 0, somaB = 0;
-
-                    for (int dy = -1; dy <= 1; dy++) {
-                        for (int dx = -1; dx <= 1; dx++) {
-                            QColor corVizinho = imagemCarregada.pixelColor(x + dx, y + dy);
-
-                            somaR += corVizinho.red();
-                            somaG += corVizinho.green();
-                            somaB += corVizinho.blue();
-                        }
-                    }
-
-                    r = somaR / 9;
-                    g = somaG / 9;
-                    b = somaB / 9;
-
-                } else {
-                    r = corAtual.red();
-                    g = corAtual.green();
-                    b = corAtual.blue();
-                }
-                break;
-            }
+    //regras para os filtros passa-baixa (casos 6 a 9: mediana, média, moda, gaussiano)
+    if (efeitoSelecionado >= 6 && efeitoSelecionado <= 9) {
+        if (param < 3) {
+            param = 3; // mínimo é matriz 3x3
+            ui->spinParametro->setValue(3);
+        } else if (param > 9) {
+            param = 9; // máximo é 9x9 por questões de processamento
+            ui->spinParametro->setValue(9);
         }
-            imagemProcessada.setPixelColor(x, y, QColor(r, g, b));
+    }
+
+    // regras para o knn smoothing (caso 10)
+    // O knn olha fixamente para um kernel 3x3 (9 pixels no total).
+    if (efeitoSelecionado == 10) {
+        if (param < 1) param = 1;
+        if (param > 9) param = 9;
+        ui->spinParametro->setValue(param);
+    }
+
+    // regra para binarização (caso 5)
+    if (efeitoSelecionado == 5 && param == 0) {
+        param = 127;
+        ui->spinParametro->setValue(127);
+    }
+
+    // EFEITOS ESTRUTURAIS (que mudam o tamanho ou não dependem do laço pixel a pixel)
+    if (efeitoSelecionado == 11) { // Rotação
+        QTransform transformacao;
+        transformacao.rotate(param);
+        imagemProcessada = imagemCarregada.transformed(transformacao, Qt::SmoothTransformation);
+    }
+    else if (efeitoSelecionado == 12) { // Espelhamento
+        bool horizontal = (param == 1);
+        imagemProcessada = imagemCarregada.mirrored(horizontal, !horizontal);
+    }
+    // EFEITOS PIXEL A PIXEL E VIZINHANÇA
+    else {
+        int kernel = (param % 2 == 0) ? param + 1 : param;
+        int offset = kernel / 2;
+
+        for (int y = 0; y < imagemProcessada.height(); y++) {
+            for (int x = 0; x < imagemProcessada.width(); x++) {
+
+                QColor corAtual = imagemCarregada.pixelColor(x, y);
+                int r = corAtual.red(), g = corAtual.green(), b = corAtual.blue();
+
+                switch (efeitoSelecionado) {
+
+                case 0: { // aumentar brilho
+                    r = qBound(0, r + param, 255);
+                    g = qBound(0, g + param, 255);
+                    b = qBound(0, b + param, 255);
+                    break;
+                }
+                case 1: { // requantizar
+                    int niveis = (param < 2) ? 10 : param;
+                    int fator = niveis - 1;
+                    r = std::round((r * fator) / 255.0) * (255 / fator);
+                    g = std::round((g * fator) / 255.0) * (255 / fator);
+                    b = std::round((b * fator) / 255.0) * (255 / fator);
+                    break;
+                }
+                case 2: // tons de cinza (canal R)
+                    g = r; b = r; break;
+                case 3: // tons de cinza (canal G)
+                    r = g; b = g; break;
+                case 4: // tons de cinza (canal B)
+                    r = b; g = b; break;
+                case 5: { // binarização
+                    int cinza = qGray(r, g, b);
+                    if (cinza >= param) { r = 255; g = 255; b = 255; }
+                    else { r = 0; g = 0; b = 0; }
+                    break;
+                }
+
+                case 6: // mediana com kernel variável
+                case 7: // média com kernel variável
+                case 8: // moda
+                {
+                    if (x >= offset && x < imagemCarregada.width() - offset && y >= offset && y < imagemCarregada.height() - offset) {
+                        std::vector<int> vR, vG, vB;
+                        int sR = 0, sG = 0, sB = 0;
+                        std::map<int, int> freqR, freqG, freqB;
+
+                        for (int dy = -offset; dy <= offset; dy++) {
+                            for (int dx = -offset; dx <= offset; dx++) {
+                                QColor viz = imagemCarregada.pixelColor(x + dx, y + dy);
+                                if (efeitoSelecionado == 6) {
+                                    vR.push_back(viz.red()); vG.push_back(viz.green()); vB.push_back(viz.blue());
+                                } else if (efeitoSelecionado == 7) {
+                                    sR += viz.red(); sG += viz.green(); sB += viz.blue();
+                                } else {
+                                    freqR[viz.red()]++; freqG[viz.green()]++; freqB[viz.blue()]++;
+                                }
+                            }
+                        }
+
+                        if (efeitoSelecionado == 6) { // Mediana
+                            std::sort(vR.begin(), vR.end());
+                            std::sort(vG.begin(), vG.end());
+                            std::sort(vB.begin(), vB.end());
+                            int meio = (kernel * kernel) / 2;
+                            r = vR[meio]; g = vG[meio]; b = vB[meio];
+                        } else if (efeitoSelecionado == 7) { // Média
+                            int area = kernel * kernel;
+                            r = sR / area; g = sG / area; b = sB / area;
+                        } else { // Moda
+                            auto maxFreq = [](const std::map<int,int>& mapa) {
+                                return std::max_element(mapa.begin(), mapa.end(),
+                                                        [](const auto& a, const auto& b) { return a.second < b.second; })->first;
+                            };
+                            r = maxFreq(freqR); g = maxFreq(freqG); b = maxFreq(freqB);
+                        }
+                    }
+                    break;
+                }
+
+                case 9: { // filtro gaussiano
+                    if (x >= offset && x < imagemCarregada.width() - offset && y >= offset && y < imagemCarregada.height() - offset) {
+                        double sigma = kernel / 6.0;
+                        if (sigma < 0.1) sigma = 0.1;
+                        double sR = 0, sG = 0, sB = 0, pesoTotal = 0;
+
+                        for (int dy = -offset; dy <= offset; dy++) {
+                            for (int dx = -offset; dx <= offset; dx++) {
+                                double peso = std::exp(-(dx*dx + dy*dy) / (2 * sigma * sigma));
+                                QColor viz = imagemCarregada.pixelColor(x + dx, y + dy);
+                                sR += viz.red() * peso;
+                                sG += viz.green() * peso;
+                                sB += viz.blue() * peso;
+                                pesoTotal += peso;
+                            }
+                        }
+                        r = sR / pesoTotal; g = sG / pesoTotal; b = sB / pesoTotal;
+                    }
+                    break;
+                }
+
+                case 10: { // filtro knn smoothing
+                    if (x > 0 && x < imagemCarregada.width() - 1 && y > 0 && y < imagemCarregada.height() - 1) {
+                        std::vector<std::pair<int, QColor>> distancias;
+                        int cinzaCentral = qGray(corAtual.red(), corAtual.green(), corAtual.blue());
+
+                        for (int dy = -1; dy <= 1; dy++) {
+                            for (int dx = -1; dx <= 1; dx++) {
+                                QColor viz = imagemCarregada.pixelColor(x + dx, y + dy);
+                                int dist = std::abs(cinzaCentral - qGray(viz.red(), viz.green(), viz.blue()));
+                                distancias.push_back({dist, viz});
+                            }
+                        }
+
+                        std::sort(distancias.begin(), distancias.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+
+                        int limitK = std::min(param > 0 ? param : 3, 9);
+                        int sR = 0, sG = 0, sB = 0;
+                        for(int i = 0; i < limitK; i++) {
+                            sR += distancias[i].second.red();
+                            sG += distancias[i].second.green();
+                            sB += distancias[i].second.blue();
+                        }
+                        r = sR / limitK; g = sG / limitK; b = sB / limitK;
+                    }
+                    break;
+                }
+
+                case 13: { // máscara
+                    if (!imagemMascara.isNull()) {
+                        QImage mascaraRedimensionada = imagemMascara.scaled(imagemCarregada.size(), Qt::IgnoreAspectRatio);
+                        int cinzaMascara = qGray(mascaraRedimensionada.pixel(x, y));
+                        if (cinzaMascara < 127) { r = 0; g = 0; b = 0; }
+                    }
+                    break;
+                }
+                }
+                imagemProcessada.setPixelColor(x, y, QColor(r, g, b));
+            }
         }
     }
 
     ui->labelProcessada->setPixmap(QPixmap::fromImage(imagemProcessada));
-
-    desenharHistograma(imagemProcessada);
+    atualizarVisualizacaoHistograma();
 }
 
 
