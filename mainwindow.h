@@ -23,8 +23,14 @@ private slots:
 
     void on_btnAplicar_clicked();
 
+    void on_btnSalvar_clicked();
+
+    void on_btnQuestao4_clicked();
+
 private:
     Ui::MainWindow *ui;
     QImage imagemCarregada;
+    QImage imagemProcessada;
+    void desenharHistograma(const QImage &imagem);
 };
 #endif // MAINWINDOW_H
