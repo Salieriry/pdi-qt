@@ -44,58 +44,64 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::desenharHistograma(const QImage &imagem){
-    int histograma[256] = {0};
+void MainWindow::desenharHistograma(const QImage &imagem)
+{
+
+    int histR[256] = {0}, histG[256] = {0}, histB[256] = {0};
     int valorMaximo = 0;
 
     for (int y = 0; y < imagem.height(); ++y) {
         for (int x = 0; x < imagem.width(); ++x) {
+            QColor cor = imagem.pixelColor(x, y);
+            histR[cor.red()]++;
+            histG[cor.green()]++;
+            histB[cor.blue()]++;
 
-            int tomDeCinza = qGray(imagem.pixel(x, y));
-
-            histograma[tomDeCinza]++;
-
-            if (histograma[tomDeCinza] > valorMaximo) {
-                valorMaximo = histograma[tomDeCinza];
-            }
+            valorMaximo = std::max({valorMaximo, histR[cor.red()], histG[cor.green()], histB[cor.blue()]});
         }
     }
 
-    QLineSeries *serie = new QLineSeries();
-    serie->setName("Quantidade de Pixels");
+    QLineSeries *serieR = new QLineSeries(); serieR->setName("Red"); serieR->setColor(QColor(255, 50, 50, 200));
+    QLineSeries *serieG = new QLineSeries(); serieG->setName("Green"); serieG->setColor(QColor(50, 200, 50, 200));
+    QLineSeries *serieB = new QLineSeries(); serieB->setName("Blue"); serieB->setColor(QColor(50, 50, 255, 200));
 
     for (int i = 0; i < 256; ++i) {
-        serie->append(i, histograma[i]);
+        serieR->append(i, histR[i]);
+        serieG->append(i, histG[i]);
+        serieB->append(i, histB[i]);
     }
 
     QChart *grafico = new QChart();
-    grafico->addSeries(serie);
-    grafico->setTitle("Histograma em Tons de Cinza");
+    grafico->addSeries(serieR);
+    grafico->addSeries(serieG);
+    grafico->addSeries(serieB);
+    grafico->setTitle("Histograma RGB");
     grafico->setAnimationOptions(QChart::SeriesAnimations);
 
+    // 3. Eixos
     QValueAxis *eixoX = new QValueAxis();
     eixoX->setRange(0, 255);
-    eixoX->setTitleText("Tons de Cinza");
+    eixoX->setTitleText("Intensidade da Cor");
     eixoX->setLabelFormat("%d");
     eixoX->setTickCount(6);
     grafico->addAxis(eixoX, Qt::AlignBottom);
-    serie->attachAxis(eixoX);
+    serieR->attachAxis(eixoX); serieG->attachAxis(eixoX); serieB->attachAxis(eixoX);
 
     QValueAxis *eixoY = new QValueAxis();
     eixoY->setRange(0, valorMaximo);
     eixoY->setTitleText("Frequência (Pixels)");
     grafico->addAxis(eixoY, Qt::AlignLeft);
-    serie->attachAxis(eixoY);
+    serieR->attachAxis(eixoY); serieG->attachAxis(eixoY); serieB->attachAxis(eixoY);
 
     QChartView *visualizadorGrafico = new QChartView(grafico);
     visualizadorGrafico->setRenderHint(QPainter::Antialiasing);
 
+    // 4. Renderização no layout
     QLayout *layoutAntigo = ui->containerHistograma->layout();
     if (layoutAntigo != nullptr) {
         QLayoutItem *item;
         while ((item = layoutAntigo->takeAt(0)) != nullptr) {
-            delete item->widget();
-            delete item;
+            delete item->widget(); delete item;
         }
         delete layoutAntigo;
     }
@@ -237,16 +243,16 @@ void MainWindow::on_btnAplicar_clicked()
                             }
                         }
 
-                        if (efeitoSelecionado == 6) { // Mediana
+                        if (efeitoSelecionado == 6) { // mediana
                             std::sort(vR.begin(), vR.end());
                             std::sort(vG.begin(), vG.end());
                             std::sort(vB.begin(), vB.end());
                             int meio = (kernel * kernel) / 2;
                             r = vR[meio]; g = vG[meio]; b = vB[meio];
-                        } else if (efeitoSelecionado == 7) { // Média
+                        } else if (efeitoSelecionado == 7) { // média
                             int area = kernel * kernel;
                             r = sR / area; g = sG / area; b = sB / area;
-                        } else { // Moda
+                        } else { // moda
                             auto maxFreq = [](const std::map<int,int>& mapa) {
                                 return std::max_element(mapa.begin(), mapa.end(),
                                                         [](const auto& a, const auto& b) { return a.second < b.second; })->first;
@@ -349,50 +355,6 @@ void MainWindow::on_btnSalvar_clicked()
 
     }
 }
-
-
-void MainWindow::on_btnQuestao4_clicked()
-{
-    int matrizOriginal[10][10] = {
-        {168, 163, 187, 184, 186, 185, 188, 162, 175, 174},
-        {171, 159, 186, 191, 190, 160, 103, 136, 153, 162},
-        {167, 166, 187, 191, 133, 149, 153, 130, 107, 87},
-        {159, 188, 196, 128, 145, 156, 134, 170, 141, 114},
-        {176, 200, 102, 118, 92,  98,  76,  118, 67,  102},
-        {196, 87,  79,  71,  77,  71,  63,  77,  69,  58},
-        {98,  91,  63,  77,  68,  61,  102, 177, 180, 90},
-        {120, 94,  68,  108, 84,  99,  91,  200, 210, 186},
-        {144, 148, 104, 117, 138, 119, 169, 205, 208, 161},
-        {148, 157, 153, 139, 126, 128, 150, 153, 164, 181}
-    };
-
-    QImage imgOriginal(10, 10, QImage::Format_RGB32);
-    QImage imgProcessada(10, 10, QImage::Format_RGB32);
-
-    for (int y = 0; y < 10; ++y) {
-        for (int x = 0; x < 10; ++x) {
-
-            int cinzaVelho = matrizOriginal[y][x];
-
-            int cinzaNovo = std::round((9.0 / 255.0) * cinzaVelho);
-
-            imgOriginal.setPixelColor(x, y, QColor(cinzaVelho, cinzaVelho, cinzaVelho));
-
-            int cinzaParaTela = cinzaNovo * (255 / 9);
-            imgProcessada.setPixelColor(x, y, QColor(cinzaParaTela, cinzaParaTela, cinzaParaTela));
-        }
-    }
-
-    QImage imgOrigAmpliada = imgOriginal.scaled(300, 300, Qt::KeepAspectRatio, Qt::FastTransformation);
-    QImage imgProcAmpliada = imgProcessada.scaled(300, 300, Qt::KeepAspectRatio, Qt::FastTransformation);
-
-    ui->labelOriginal->setPixmap(QPixmap::fromImage(imgOrigAmpliada));
-    ui->labelProcessada->setPixmap(QPixmap::fromImage(imgProcAmpliada));
-
-    imagemProcessada = imgProcessada;
-    desenharHistograma(imagemProcessada);
-}
-
 
 void MainWindow::on_btnCarregarMascara_clicked()
 {

@@ -14,200 +14,144 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QLabel" name="labelOriginal">
-    <property name="geometry">
-     <rect>
-      <x>60</x>
-      <y>50</y>
-      <width>481</width>
-      <height>281</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::Shape::Box</enum>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="scaledContents">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QLabel" name="labelProcessada">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>50</y>
-      <width>481</width>
-      <height>281</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::Shape::Box</enum>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="scaledContents">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btnCarregar">
-    <property name="geometry">
-     <rect>
-      <x>430</x>
-      <y>340</y>
-      <width>111</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Carregar Imagem</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="comboEfeitos">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>340</y>
-      <width>211</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="placeholderText">
-     <string>Escolha um filtro</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btnAplicar">
-    <property name="geometry">
-     <rect>
-      <x>820</x>
-      <y>340</y>
-      <width>91</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Aplicar Filtro</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>60</x>
-      <y>20</y>
-      <width>121</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Imagem Carregada</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>600</x>
-      <y>20</y>
-      <width>131</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Imagem Processada</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>60</x>
-      <y>370</y>
-      <width>71</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Histograma</string>
-    </property>
-   </widget>
-   <widget class="QWidget" name="containerHistograma" native="true">
-    <property name="geometry">
-     <rect>
-      <x>60</x>
-      <y>410</y>
-      <width>1161</width>
-      <height>281</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btnSalvar">
-    <property name="geometry">
-     <rect>
-      <x>920</x>
-      <y>340</y>
-      <width>101</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Salvar Imagem</string>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="spinParametro">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>370</y>
-      <width>61</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="maximum">
-     <number>255</number>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="radioHistOriginal">
-    <property name="geometry">
-     <rect>
-      <x>150</x>
-      <y>370</y>
-      <width>98</width>
-      <height>19</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Original</string>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="radioHistProcessada">
-    <property name="geometry">
-     <rect>
-      <x>250</x>
-      <y>370</y>
-      <width>98</width>
-      <height>19</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Processada</string>
-    </property>
-    <property name="checked">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btnCarregarMascara">
-    <property name="geometry">
-     <rect>
-      <x>430</x>
-      <y>370</y>
-      <width>111</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Carregar Máscara</string>
-    </property>
-   </widget>
+   <layout class="QVBoxLayout" name="verticalLayout_4">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Imagem Carregada</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelOriginal">
+          <property name="frameShape">
+           <enum>QFrame::Shape::Box</enum>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="scaledContents">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Imagem Processada</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelProcessada">
+          <property name="frameShape">
+           <enum>QFrame::Shape::Box</enum>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="scaledContents">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QRadioButton" name="radioHistOriginal">
+        <property name="text">
+         <string>Original</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="radioHistProcessada">
+        <property name="text">
+         <string>Processada</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnCarregarMascara">
+        <property name="text">
+         <string>Carregar Máscara</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnCarregar">
+        <property name="text">
+         <string>Carregar Imagem</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="spinParametro">
+        <property name="maximum">
+         <number>255</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="comboEfeitos">
+        <property name="placeholderText">
+         <string>Escolha um filtro</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnAplicar">
+        <property name="text">
+         <string>Aplicar Filtro</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnSalvar">
+        <property name="text">
+         <string>Salvar Imagem</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Histograma</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="containerHistograma" native="true">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>250</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
    <zorder>containerHistograma</zorder>
    <zorder>labelOriginal</zorder>
    <zorder>labelProcessada</zorder>
