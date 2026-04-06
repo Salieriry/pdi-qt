@@ -29,6 +29,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->comboEfeitos->addItem("Binarização");
     ui->comboEfeitos->addItem("Filtro da Mediana (3x3)");
     ui->comboEfeitos->addItem("Filtro da Média (3x3)");
+    ui->comboEfeitos->addItem("Filtro da Moda (Passa-baixa)");
+    ui->comboEfeitos->addItem("Filtro Gaussiano");
+    ui->comboEfeitos->addItem("Filtro K-Nearest (k vizinhos mais próximos)");
+    ui->comboEfeitos->addItem("Rotação (Use o parâmetro para o ângulo)");
+    ui->comboEfeitos->addItem("Espelhamento (1=Horiz, 2=Vert)");
+    ui->comboEfeitos->addItem("Aplicar Máscara (Requer carregamento)");
 
 
 }
