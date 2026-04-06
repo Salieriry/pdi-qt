@@ -336,3 +336,18 @@ void MainWindow::on_btnCarregarMascara_clicked()
     }
 }
 
+
+void MainWindow::atualizarVisualizacaoHistograma()
+{
+    if (ui->radioHistOriginal->isChecked() && !imagemCarregada.isNull()) {
+        desenharHistograma(imagemCarregada);
+    } else if (ui->radioHistProcessada->isChecked() && !imagemProcessada.isNull()) {
+        desenharHistograma(imagemProcessada);
+    }
+}
+
+void MainWindow::on_radioHistOriginal_clicked() { atualizarVisualizacaoHistograma(); }
+
+
+void MainWindow::on_radioHistProcessada_clicked() { atualizarVisualizacaoHistograma(); }
+

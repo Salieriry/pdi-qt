@@ -173,7 +173,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>RadioButton</string>
+     <string>Original</string>
     </property>
    </widget>
    <widget class="QRadioButton" name="radioHistProcessada">
@@ -186,7 +186,10 @@
      </rect>
     </property>
     <property name="text">
-     <string>RadioButton</string>
+     <string>Processada</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QPushButton" name="btnCarregarMascara">

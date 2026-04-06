@@ -29,6 +29,10 @@ private slots:
 
     void on_btnCarregarMascara_clicked();
 
+    void on_radioHistOriginal_clicked();
+
+    void on_radioHistProcessada_clicked();
+
 private:
     Ui::MainWindow *ui;
     QImage imagemCarregada;
