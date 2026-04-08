@@ -1,0 +1,105 @@
+name: CMake Multi-Platform Build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    # Instalação do Qt de forma robusta
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.5.3' # Versão estável específica
+        arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2019_64' || '' }}
+        # Se o Python falhar, esta versão da action tentará métodos alternativos
+        setup-python: 'false' 
+
+    # Dependências extras apenas para o Linux (incluindo o fuse para o AppImage)
+    - name: Install Linux Dependencies
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libxcb-cursor0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0 libgl1-mesa-dev fuse
+
+    - name: Configure CMake
+      # O 'install-qt-action' define automaticamente as variáveis para o CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      shell: bash
+      run: |
+        if [ -f CTestTestfile.cmake ]; then
+          ctest -C ${{env.BUILD_TYPE}}
+        else
+          echo "Sem testes para executar."
+        fi
+
+    # ==========================================
+    # EMPACOTAMENTO WINDOWS (ZIP Portátil)
+    # ==========================================
+    - name: Empacotar Executavel Windows (windeployqt)
+      if: matrix.os == 'windows-latest'
+      shell: pwsh
+      run: |
+        mkdir deploy
+        copy ${{github.workspace}}\build\Release\PDI2026.exe deploy\
+        windeployqt --release --compiler-runtime deploy\PDI2026.exe
+        Compress-Archive -Path deploy\* -DestinationPath PDI2026-Windows.zip
+
+    # ==========================================
+    # EMPACOTAMENTO LINUX (.AppImage)
+    # ==========================================
+    - name: Criar AppImage Linux (linuxdeployqt)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        mkdir -p AppDir/usr/bin AppDir/usr/share/applications AppDir/usr/share/icons/hicolor/256x256/apps
+        cp ${{github.workspace}}/build/PDI2026 AppDir/usr/bin/
+        
+        echo "[Desktop Entry]" > AppDir/usr/share/applications/PDI2026.desktop
+        echo "Name=PDI2026" >> AppDir/usr/share/applications/PDI2026.desktop
+        echo "Exec=PDI2026" >> AppDir/usr/share/applications/PDI2026.desktop
+        echo "Icon=PDI2026" >> AppDir/usr/share/applications/PDI2026.desktop
+        echo "Type=Application" >> AppDir/usr/share/applications/PDI2026.desktop
+        echo "Categories=Graphics;" >> AppDir/usr/share/applications/PDI2026.desktop
+        
+        touch AppDir/usr/share/icons/hicolor/256x256/apps/PDI2026.png
+        
+        wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+        chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+        ./linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/share/applications/PDI2026.desktop -appimage
+        
+        mv PDI2026*.AppImage PDI2026-Linux.AppImage
+
+    # ==========================================
+    # UPLOAD DE ARTEFATOS (Comum a ambos)
+    # ==========================================
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        # Dá um nome diferente ao artefacto dependendo do SO que o gerou
+        name: PDI2026-build-${{ matrix.os }}
+        path: |
+          PDI2026-Windows.zip
+          PDI2026-Linux.AppImage
+        # Ignora avisos se o ficheiro do outro SO não existir na máquina atual
+        if-no-files-found: ignore
