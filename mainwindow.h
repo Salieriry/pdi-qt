@@ -25,8 +25,6 @@ private slots:
 
     void on_btnSalvar_clicked();
 
-    void on_btnQuestao4_clicked();
-
     void on_btnCarregarMascara_clicked();
 
     void on_radioHistOriginal_clicked();
