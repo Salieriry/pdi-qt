@@ -110,7 +110,7 @@ jobs:
   # ==========================================
   create-release:
     needs: [build-windows, build-linux]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - name: Download Artifacts
       uses: actions/download-artifact@v4
