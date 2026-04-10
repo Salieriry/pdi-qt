@@ -1,0 +1,128 @@
+name: Gerar Release Portatil
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Tag da Versão (ex: v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  # ==========================================
+  # 1. BUILD WINDOWS (Gera o ZIP Portátil)
+  # ==========================================
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.5.3'
+        arch: 'win64_msvc2019_64'
+        setup-python: 'false'
+
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Empacotar Executavel (windeployqt)
+      shell: pwsh
+      run: |
+        mkdir deploy
+        # Alterado para o nome do executável definido no CMakeLists.txt (PDI2026.exe)
+        copy build\Release\PDI2026.exe deploy\
+        
+        windeployqt --release --compiler-runtime deploy\PDI2026.exe
+        
+        Compress-Archive -Path deploy\* -DestinationPath PDI2026-Windows.zip
+
+    - name: Upload Windows Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-build
+        path: PDI2026-Windows.zip
+
+  # ==========================================
+  # 2. BUILD LINUX (Gera o .AppImage)
+  # ==========================================
+  build-linux:
+    runs-on: ubuntu-22.04 
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.5.3'
+        setup-python: 'false'
+
+    - name: Install Linux Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libxcb-cursor0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0 libgl1-mesa-dev fuse
+
+    - name: Configure & Build
+      run: |
+        cmake -B build -DCMAKE_BUILD_TYPE=Release
+        cmake --build build --config Release
+
+    - name: Criar AppImage (linuxdeployqt)
+      run: |
+        mkdir -p AppDir/usr/bin AppDir/usr/share/applications AppDir/usr/share/icons/hicolor/256x256/apps
+        
+        # Copia o executável com o nome exato gerado no Linux
+        cp build/PDI2026 AppDir/usr/bin/
+        
+        # Criação do atalho Linux (ficheiro .desktop)
+        echo "[Desktop Entry]" > AppDir/usr/share/applications/PDI2026.desktop
+        echo "Name=PDI2026" >> AppDir/usr/share/applications/PDI2026.desktop
+        echo "Exec=PDI2026" >> AppDir/usr/share/applications/PDI2026.desktop
+        echo "Icon=PDI2026" >> AppDir/usr/share/applications/PDI2026.desktop
+        echo "Type=Application" >> AppDir/usr/share/applications/PDI2026.desktop
+        echo "Categories=Graphics;" >> AppDir/usr/share/applications/PDI2026.desktop
+        
+        touch AppDir/usr/share/icons/hicolor/256x256/apps/PDI2026.png
+        
+        wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+        chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+        ./linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/share/applications/PDI2026.desktop -appimage
+        
+        mv PDI2026*.AppImage PDI2026-Linux.AppImage
+
+    - name: Upload Linux Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-build
+        path: PDI2026-Linux.AppImage
+
+  # ==========================================
+  # 3. CRIAR RELEASE NO GITHUB
+  # ==========================================
+  create-release:
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: ./artifacts
+
+    - name: Release no GitHub
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ github.event.inputs.version }}
+        name: "Release ${{ github.event.inputs.version }}"
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+        files: |
+          ./artifacts/windows-build/PDI2026-Windows.zip
+          ./artifacts/linux-build/PDI2026-Linux.AppImage
