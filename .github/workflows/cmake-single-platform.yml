@@ -28,7 +28,8 @@ jobs:
         version: '6.5.3' # Versão estável específica
         arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2019_64' || '' }}
         # Se o Python falhar, esta versão da action tentará métodos alternativos
-        setup-python: 'false' 
+        setup-python: 'false'
+        modules: 'qtcharts' 
 
     # Dependências extras apenas para o Linux (incluindo o fuse para o AppImage)
     - name: Install Linux Dependencies
