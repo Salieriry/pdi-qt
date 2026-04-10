@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_4">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,1">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
@@ -28,6 +28,18 @@
         </item>
         <item>
          <widget class="QLabel" name="labelOriginal">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
+          </property>
           <property name="frameShape">
            <enum>QFrame::Shape::Box</enum>
           </property>
@@ -52,6 +64,18 @@
         </item>
         <item>
          <widget class="QLabel" name="labelProcessada">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
+          </property>
           <property name="frameShape">
            <enum>QFrame::Shape::Box</enum>
           </property>
@@ -141,10 +165,16 @@
       </item>
       <item>
        <widget class="QWidget" name="containerHistograma" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>250</height>
+          <height>300</height>
          </size>
         </property>
        </widget>
@@ -152,20 +182,6 @@
      </layout>
     </item>
    </layout>
-   <zorder>containerHistograma</zorder>
-   <zorder>labelOriginal</zorder>
-   <zorder>labelProcessada</zorder>
-   <zorder>btnCarregar</zorder>
-   <zorder>comboEfeitos</zorder>
-   <zorder>btnAplicar</zorder>
-   <zorder>label</zorder>
-   <zorder>label_2</zorder>
-   <zorder>label_3</zorder>
-   <zorder>btnSalvar</zorder>
-   <zorder>spinParametro</zorder>
-   <zorder>radioHistOriginal</zorder>
-   <zorder>radioHistProcessada</zorder>
-   <zorder>btnCarregarMascara</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
